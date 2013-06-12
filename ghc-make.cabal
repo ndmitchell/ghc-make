@@ -1,0 +1,28 @@
+cabal-version:      >= 1.8
+build-type:         Simple
+name:               ghc-make
+version:            0.1
+license:            BSD3
+license-file:       LICENSE
+category:           Development
+author:             Neil Mitchell <ndmitchell@gmail.com>
+maintainer:         Neil Mitchell <ndmitchell@gmail.com>
+copyright:          Neil Mitchell 2013
+synopsis:           Accelerated version of ghc --make
+description:
+    The @ghc-make@ program can be used as an alternative to @ghc --make@. When the build has some
+    work to do it will perform slower than @ghc --make@ alone. When there is no work to do, the build
+    will run faster, sometimes noticably so.
+homepage:           http://community.haskell.org/~ndm/shake/
+stability:          Beta
+
+source-repository head
+    type:     git
+    location: git://github.com/ndmitchell/ghc-make.git
+
+executable ghc-make
+    main-is: Main.hs
+    ghc-options: -threaded
+    build-depends:
+        base == 4.*,
+        shake == 0.10.*
