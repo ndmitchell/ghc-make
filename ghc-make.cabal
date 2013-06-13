@@ -13,7 +13,9 @@ description:
     The @ghc-make@ program can be used as an alternative to @ghc --make@. When the build has some
     work to do it will perform slower than @ghc --make@ alone. When there is no work to do, the build
     will run faster, sometimes significantly so.
-homepage:           http://community.haskell.org/~ndm/shake/
+    .
+    See the readme for full details <https://github.com/ndmitchell/ghc-make#readme>
+homepage:           https://github.com/ndmitchell/ghc-make#readme
 stability:          Beta
 
 source-repository head
