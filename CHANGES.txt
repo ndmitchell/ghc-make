@@ -1,0 +1,4 @@
+Changelog for ghc-make
+
+0.1
+    Initial version
