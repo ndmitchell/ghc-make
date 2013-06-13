@@ -3,17 +3,15 @@ ghc-make
 
 [![Build Status](https://travis-ci.org/ndmitchell/ghc-make.png)](https://travis-ci.org/ndmitchell/ghc-make)
 
-A version of ghc --make which runs faster when there is nothing to rebuild.
+A version of `ghc --make` which completes faster if there is nothing to rebuild.
 
 #### How do I use it?
 
-Install `ghc-make` (`cabal update && cabal install ghc-make`). Then replace your calls to `ghc --make my arguments` with `ghc-make my arguments` (you can still pass `--make` to `ghc-make`, but it is unnecessary). All arguments and flags GHC supports are supported by `ghc-make` - it is intended as a drop in replacement.
+Install `ghc-make` (`cabal update && cabal install ghc-make`). Then replace your calls to `ghc --make _my -arguments_` with `ghc-make _my -arguments_` (you can still pass `--make` to `ghc-make`, but it is unnecessary). All arguments and flags supported by `ghc --make` are supported by `ghc-make` - it is intended as a drop in replacement.
 
 #### What should I see?
 
-If a zero build takes _Z_ seconds, then a build which requires compilation will take an additional _Z_ seconds, and a build which requires no compilation will take almost no time at all (saving you _Z_ seconds).
-
-More concretely, imagine I have a script that runs `ghc --make MyCode && ./MyCode`. Most of the time the source does not change. Running `ghc --make` when there is nothing to do takes 5 seconds (I have projects that are as high as 23 seconds). If I switch to `ghc-make MyCode && ./MyCode` then when there are no changes the compilation takes a mere 0.21s (of which 0.18s is process spawning overhead). If there are changes to be made, it will take recompilation time plus an additional 5 seconds.
+Imagine you have a script that runs `ghc --make MyCode && ./MyCode` and that running `ghc --make` when there is nothing to do takes 5 seconds (I have projects that are as high as 23 seconds). If you switch to `ghc-make MyCode && ./MyCode` then when there is nothing to do it will take almost no time (0.2 seconds would be on the high side). If things need recompiling it will take the recompilation time plus the time for `ghc --make` to do nothing (so 5 seconds extra).
 
 #### What GHC features are unsupported?
 
