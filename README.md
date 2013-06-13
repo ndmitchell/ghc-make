@@ -27,6 +27,10 @@ When GHC does a compilation check it runs any preprocessors and parses the Haske
 
 When `ghc-make` has to do a build it also runs `ghc -M` to generate a makefile so it has a current list of all dependencies. To produce that list, GHC has to run all preprocessors and parse all Haskell files. If GHC was able to produce a makefile while building (as `gcc` is able to do) then `ghc-make` would only ever be very slightly slower.
 
+#### Does `ghc-make` provide parallel builds?
+
+No, but [ghc-parmake](http://hackage.haskell.org/package/ghc-parmake) does. However, generally I find you need a parallel factor of 3x to match `ghc --make` on a single core, since `ghc --make` does a lot of caching that is unavailable to `ghc-parmake`.
+
 #### How it it implemented?
 
 The majority of the work is performed by the [Shake library](https://github.com/ndmitchell/shake), and everything is expressed as standard build-system dependencies.
