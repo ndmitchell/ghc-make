@@ -3,27 +3,29 @@ ghc-make
 
 [![Build Status](https://travis-ci.org/ndmitchell/ghc-make.png)](https://travis-ci.org/ndmitchell/ghc-make)
 
-A version of `ghc --make` which completes faster if there is nothing to rebuild.
+An alternative to `ghc --make` which completes faster when nothing needs compiling.
 
 #### How do I use it?
 
-Install `ghc-make` (`cabal update && cabal install ghc-make`). Then replace your calls to `ghc --make _my -arguments_` with `ghc-make _my -arguments_` (you can still pass `--make` to `ghc-make`, but it is unnecessary). All arguments and flags supported by `ghc --make` are supported by `ghc-make` - it is intended as a drop in replacement.
+Install `ghc-make` (`cabal update && cabal install ghc-make`). Then replace your calls to `ghc --make my -arguments` with `ghc-make my -arguments` (you can pass `--make` to `ghc-make`, but it is unnecessary). All arguments and flags supported by `ghc --make` are supported by `ghc-make` - it is intended as a drop-in replacement.
 
 #### What should I see?
 
-Imagine you have a script that runs `ghc --make MyCode && ./MyCode` and that running `ghc --make` when there is nothing to do takes 5 seconds (I have projects that are as high as 23 seconds). If you switch to `ghc-make MyCode && ./MyCode` then when there is nothing to do it will take almost no time (0.2 seconds would be on the high side). If things need recompiling it will take the recompilation time plus the time for `ghc --make` to do nothing (so 5 seconds extra).
+Imagine you have a script that runs `ghc --make MyCode && ./MyCode` and that running `ghc --make` when nothing needs compiling takes 5 seconds (I have projects that take as long as 23 seconds). If you switch to `ghc-make MyCode && ./MyCode` then when nothing needs compiling it will take almost no time (less than 0.2 seconds). If things need compiling it will take the compilation time plus the time with `ghc --make` when nothing needs compiling (in this example, 5 seconds extra). If the source changes on less than half the executions you will see a speedup.
+
+The `ghc-make` program produces a handful of metadata files which are stored with the `.ghc-make` prefix. These files will be placed in the current directory, or the `-hidir`/`-odir` directory if specified.
 
 #### What GHC features are unsupported?
 
-Template Haskell files that register additional file dependencies during execution these will not cause `ghc-make` to rebuild. More generally, anything not captured by `ghc -M` will not cause a rebuild.
+Anything not captured by `ghc -M` will not be tracked, which includes additional dependencies registered by Template Haskell.
 
 #### Why is it faster?
 
-When GHC does a compilation check it runs any preprocessors and parses the Haskell files, which can be slow. When `ghc-make` does a compilation check it reads a list of file/modification times from a database then checks the files have the same times, if they do, it does nothing.
+When GHC does a compilation check it runs any preprocessors and parses the Haskell files, which can be slow. When `ghc-make` does a compilation check it reads a list of file names and modification times from a database and checks the times still match, and if they do, it does nothing.
 
 #### Why is it slower?
 
-When `ghc-make` has to do a build it also runs `ghc -M` to generate a makefile so it has a current list of all dependencies. To produce that list, GHC has to run all preprocessors and parse all Haskell files. If GHC was able to produce a makefile while building (as `gcc` is able to do) then `ghc-make` would only ever be very slightly slower.
+When things have changed `ghc-make` also runs `ghc -M` to get a list of dependencies. To produce that list, GHC has to run any preprocessors and parse the Haskell files. If GHC was able to produce the dependencies while building (as `gcc` is able to do) then `ghc-make` would never be noticably slower.
 
 #### Does `ghc-make` provide parallel builds?
 
@@ -31,8 +33,10 @@ No, but [ghc-parmake](http://hackage.haskell.org/package/ghc-parmake) does. Howe
 
 #### How it it implemented?
 
-The majority of the work is performed by the [Shake library](https://github.com/ndmitchell/shake), and everything is expressed as standard build-system dependencies.
+This program uses the [Shake library](https://github.com/ndmitchell/shake) for dependency tracking and `ghc --make` for building. The code is not very complex.
 
-#### Should `ghc --make` just switch to Shake directly?
+To pass options to the underlying Shake build system prefix them with `--shake`, for example `--shake--timings` will print information about how long each phase takes and `--shake--help` will list the available Shake options.
 
-If `ghc --make` used Shake it is likely their nothing to do builds would be just as fast as `ghc-make`, and with additional work they could take advantage of parallel compilation. Of course, given a large existing code base, it could be a complex project.
+#### Should GHC just use Shake directly?
+
+Should _large and important project_ use _authors pet library_? Yes, of course :smiley:. If `ghc --make` used Shake it is likely their builds with no recompilation would be just as fast as `ghc-make`, and with additional work they could take advantage of parallel compilation. However, integrating Shake into such a large code base would be a lot of work - perhaps you should offer to help the GHC team?
