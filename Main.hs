@@ -2,13 +2,16 @@
 
 module Main(main) where
 
+import Control.Monad
+import Data.Either
+import Data.List
+import Data.Maybe
 import Development.Shake
 import Development.Shake.Command
 import Development.Shake.FilePath
 import System.Environment
-import Data.Either
-import Data.List
-import Data.Maybe
+import System.Exit
+import System.Process
 
 
 main :: IO ()
@@ -16,6 +19,12 @@ main = do
     args <- getArgs
     let (argsShake, argsGHC) = splitFlags $ delete "--make" args
     let prefix = maybe ".ghc-make" (</> ".ghc-make") $ dumpDir argsGHC
+
+    when ("--version" `elem` argsGHC ||
+          "--numeric-version" `elem` argsGHC ||
+          any (`elem` argsGHC) flagsConflictingWithM
+         ) $
+      exitWith =<< rawSystem "ghc" argsGHC
 
     withArgs argsShake $ shakeArgs shakeOptions{shakeFiles=prefix, shakeVerbosity=Quiet} $ do
         want [prefix <.> "makefile"]
@@ -30,6 +39,17 @@ main = do
             opts <- liftIO $ fmap parseMakefile $ readFile out
             () <- cmd "ghc --make" argsGHC
             need $ nub $ concatMap (uncurry (:)) opts
+
+
+-- | All flags conflicting with `ghc -M`.
+-- Obtained from ghc/Main.hs, `data PostLoadMode`, must be kept up to date:
+-- All modes that are not `DoMkDependHS` (`-M`) are conflicting
+-- (apart from `--make`).
+flagsConflictingWithM :: [String]
+flagsConflictingWithM = [ "--show-iface", "-E", "-C", "-S", "-c"
+                        , "--interactive", "-e", "--abi-hash"
+                        , "--info"
+                        ]
 
 
 -- | Split flags into (Shake flags, GHC flags)
