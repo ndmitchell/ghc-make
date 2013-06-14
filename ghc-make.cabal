@@ -29,3 +29,5 @@ executable ghc-make
         base == 4.*,
         shake == 0.10.*,
         process >= 1.0
+    other-modules:
+        Build
