@@ -20,11 +20,9 @@ main = do
     let (argsShake, argsGHC) = splitFlags $ delete "--make" args
     let prefix = maybe ".ghc-make" (</> ".ghc-make") $ dumpDir argsGHC
 
-    when ("--version" `elem` argsGHC ||
-          "--numeric-version" `elem` argsGHC ||
-          any (`elem` argsGHC) flagsConflictingWithM
-         ) $
-      exitWith =<< rawSystem "ghc" argsGHC
+    let badFlags = "--version" : "--numeric-version" : flagsConflictingWithM
+    when (any (`elem` badFlags) argsGHC) $
+        exitWith =<< rawSystem "ghc" argsGHC
 
     withArgs argsShake $ shakeArgs shakeOptions{shakeFiles=prefix, shakeVerbosity=Quiet} $ do
         want [prefix <.> "makefile"]
