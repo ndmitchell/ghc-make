@@ -1,0 +1,4 @@
+:set -fno-warn-overlapping-patterns -fwarn-unused-binds -fwarn-unused-imports
+:load Test
+
+:def test \x -> return $ ":main " ++ x

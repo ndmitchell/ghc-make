@@ -1,5 +1,6 @@
 Changelog for ghc-make
 
     Add test suite
+    Support other GHC modes such as --version
 0.1
     Initial version
