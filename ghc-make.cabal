@@ -28,6 +28,7 @@ executable ghc-make
     build-depends:
         base == 4.*,
         shake == 0.10.*,
+        unordered-containers >= 0.2.1 && < 0.3,
         process >= 1.0
     other-modules:
         Args
