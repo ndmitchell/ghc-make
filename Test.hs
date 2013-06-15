@@ -10,6 +10,7 @@ import System.Directory
 import System.Environment
 import System.Exit
 import Development.Shake(removeFiles)
+import Development.Shake.FilePath
 
 
 data Expect = Exit
@@ -46,7 +47,7 @@ run dir args es =
             sequence_ acts
 
 clean :: FilePath -> IO ()
-clean dir = removeFiles dir ["//*.hi","//*.o","//.ghc-make.*"]
+clean dir = removeFiles dir ["//*.hi","//*.o","//.ghc-make.*","//Main" <.> exe]
 
 withCurrentDirectory :: FilePath -> IO () -> IO ()
 withCurrentDirectory dir act = do
