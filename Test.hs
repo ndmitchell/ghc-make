@@ -47,7 +47,7 @@ run dir args es =
             sequence_ acts
 
 clean :: FilePath -> IO ()
-clean dir = removeFiles dir ["//*.hi","//*.o","//.ghc-make.*","//Main" <.> exe]
+clean dir = removeFiles dir ["//*.hi","//*.hi-boot","//*.o","//*.o-boot","//.ghc-make.*","//Main" <.> exe, "//Root" <.> exe]
 
 withCurrentDirectory :: FilePath -> IO () -> IO ()
 withCurrentDirectory dir act = do
@@ -68,5 +68,10 @@ main = do
     touch "tests/simple/Main.hs"
     run "tests/simple" ["Main.hs"] [Change "Main.o"]
     clean "tests/simple"
+
     run "." ["--version"] [Exit]
+
+    clean "tests/complex"
+    run "tests/complex" ["Root.hs"] [Change "Root.o"]
+    clean "tests/complex"
     putStrLn "Success"
