@@ -33,3 +33,4 @@ executable ghc-make
     other-modules:
         Args
         Build
+        Makefile

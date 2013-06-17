@@ -3,15 +3,21 @@
 module Build(main) where
 
 import Control.Monad
-import Data.List
 import Development.Shake
 import Development.Shake.Command
 import Development.Shake.FilePath
 import System.Environment
+import Data.List
 import System.Exit
 import System.Process
 import qualified Data.HashMap.Strict as Map
 import Args
+import Makefile
+
+
+-- | Increment every time I change the rules in an incompatible way
+ghcMakeVer :: Int
+ghcMakeVer = 2
 
 
 main :: IO ()
@@ -21,28 +27,50 @@ main = do
     when modeGHC $
         exitWith =<< rawSystem "ghc" argsGHC
 
-    let prefix = makeDir </> ".ghc-make"
-    withArgs argsShake $ shakeArgs shakeOptions{shakeFiles=prefix, shakeVerbosity=Quiet} $ do
-        want [prefix <.> "makefile"]
+    let opts = shakeOptions
+            {shakeThreads=threads
+            ,shakeFiles=prefix
+            ,shakeVerbosity=if threads == 1 then Quiet else Normal
+            ,shakeVersion=show ghcMakeVer}
+    withArgs argsShake $ shakeArgs opts $ do
+        want [prefix <.> "result"]
 
+        -- A file containing the GHC arguments
         prefix <.> "args" *> \out -> do
             alwaysRerun
             writeFileChanged out $ unlines argsGHC
+        args <- return $ do need [prefix <.> "args"]; return argsGHC
 
+        -- A file containing the output of -M
         prefix <.> "makefile" *> \out -> do
-            need [prefix <.> "args"]
-            () <- cmd "ghc -M -dep-makefile" [out] argsGHC
-            opts <- liftIO $ fmap parseMakefile $ readFile out
-            () <- cmd "ghc --make" argsGHC
-            need $ nub $ concatMap (uncurry (:)) $ Map.toList opts
+            args <- args
+            -- Use the default o/hi settings so we can parse the makefile properly
+            () <- cmd "ghc -M -dep-makefile" [out] args -- FIXME: Put back "-odir. -hidir. -hisuf=hi -osuf=o"
+            mk <- liftIO $ makefile out
+            need $ Map.elems $ source mk
+        mk <- do cache <- newCache makefile; return $ cache $ prefix <.> "makefile"
 
+        -- The result, we can't want the object directly since it is painful to
+        -- define a build rule for it because its name depends on both args and makefile
+        prefix <.> "result" *> \out -> do
+            args <- args
+            mk <- mk
+            let exec = cmd "ghc --make" args :: Action ()
+                grab = need $ map oFile $ Map.keys $ source mk
+            if threads == 1 then exec >> grab else grab >> exec
 
-parseMakefile :: String -> Map.HashMap FilePath [FilePath]
-parseMakefile = Map.fromListWith (++) . concatMap f . join . lines
-    where
-        join (x1:x2:xs) | "\\" `isSuffixOf` x1 = join $ (init x1 ++ x2) : xs
-        join (x:xs) = x : join xs
-        join [] = []
+            let output = outputFile $ root mk
+            -- ensure that if the file gets deleted we rerun this rule without first trying to
+            -- need the output, since we don't have a rule to build the output
+            doesFileExist output
+            need [output]
+            writeFile' out ""
 
-        f x = [(a, words $ drop 1 b) | a <- words a]
-            where (a,b) = break (== ':') $ takeWhile (/= '#') x
+        let match x = do m <- oModule x `mplus` hiModule x; return [oFile m, hiFile m]
+        match ?>> \[o,hi] -> do
+            let Just m = oModule o
+            mk <- mk
+            need $ map hiFile $ Map.lookupDefault [] m $ imports mk
+            when (threads /= 1) $ do
+                args <- args
+                cmd "ghc" (delete "Main.hs" args) "-c" [source mk Map.! m]
