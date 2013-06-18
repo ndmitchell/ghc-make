@@ -1,10 +1,11 @@
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE RecordWildCards, DeriveDataTypeable, GeneralizedNewtypeDeriving #-}
 
 module Build(main) where
 
 import Control.Monad
 import Development.Shake
 import Development.Shake.Command
+import Development.Shake.Classes
 import Development.Shake.FilePath
 import System.Environment
 import System.Exit
@@ -17,6 +18,11 @@ import Makefile
 -- | Increment every time I change the rules in an incompatible way
 ghcMakeVer :: Int
 ghcMakeVer = 2
+
+
+newtype AskImports = AskImports Module deriving (Show,Typeable,Eq,Hashable,Binary,NFData)
+
+newtype AskSource = AskSource Module deriving (Show,Typeable,Eq,Hashable,Binary,NFData)
 
 
 main :: IO ()
@@ -48,6 +54,9 @@ main = do
             mk <- liftIO $ makefile out
             need $ Map.elems $ source mk
         mk <- do cache <- newCache makefile; return $ cache $ prefix <.> "makefile"
+        askImports <- addOracle $ \(AskImports x) -> do mk <- mk; return $ Map.lookupDefault [] x $ imports mk
+        askSource <- addOracle $ \(AskSource x) -> do mk <- mk; return $ source mk Map.! x
+
 
         -- The result, we can't want the object directly since it is painful to
         -- define a build rule for it because its name depends on both args and makefile
@@ -69,9 +78,9 @@ main = do
         let match x = do m <- oModule x `mplus` hiModule x; return [oFile m, hiFile m]
         match ?>> \[o,hi] -> do
             let Just m = oModule o
-            mk <- mk
-            need $ map hiFile $ Map.lookupDefault [] m $ imports mk
+            source <- askSource (AskSource m)
+            need . (source:) . map hiFile =<< askImports (AskImports m)
             when (threads /= 1) $ do
                 args <- args
                 let isRoot x = x == "Main" || takeExtension x `elem` [".hs",".lhs"]
-                cmd "ghc -odir. -hidir." (filter (not . isRoot) args) "-c" [source mk Map.! m]
+                cmd "ghc -odir. -hidir." (filter (not . isRoot) args) "-c" [source]
