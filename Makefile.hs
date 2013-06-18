@@ -30,10 +30,6 @@ data Makefile = Makefile
 makefile :: FilePath -> IO Makefile
 makefile file = fmap (hack . foldl' f z . parseMakefile) $ readFile file
     where
-        -- GHC gets the -M output wrong if you specify an -odir and the root is not named Main.hs,
-        -- this code fixes it up
-        hack m = m -- FIXME: todo {root = Module [takeBaseName $ source m Map.! root m] False}
-
         z = Makefile (Module [] False) Map.empty Map.empty
 
         -- We rely on the order of the generated makefile, in particular
