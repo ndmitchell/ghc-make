@@ -62,16 +62,20 @@ touch file = do
 
 main :: IO ()
 main = do
-    clean "tests/simple"
-    run "tests/simple" ["Main.hs"] [Change "Main.o"]
-    run "tests/simple" ["Main.hs"] [Remain "Main.o"]
-    touch "tests/simple/Main.hs"
-    run "tests/simple" ["Main.hs"] [Change "Main.o"]
-    clean "tests/simple"
+    args <- getArgs
+    if args /= [] then
+        withArgs args Main.main
+     else do
+        clean "tests/simple"
+        run "tests/simple" ["Main.hs"] [Change "Main.o"]
+        run "tests/simple" ["Main.hs"] [Remain "Main.o"]
+        touch "tests/simple/Main.hs"
+        run "tests/simple" ["Main.hs"] [Change "Main.o"]
+        clean "tests/simple"
 
-    run "." ["--version"] [Exit]
+        run "." ["--version"] [Exit]
 
-    clean "tests/complex"
-    run "tests/complex" ["Root.hs","-ichildren"] [Change "Main.o"]
-    clean "tests/complex"
-    putStrLn "Success"
+        clean "tests/complex"
+        run "tests/complex" ["Root.hs","-ichildren"] [Change "Main.o"]
+        clean "tests/complex"
+        putStrLn "Success"
