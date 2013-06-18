@@ -72,6 +72,6 @@ main = do
     run "." ["--version"] [Exit]
 
     clean "tests/complex"
-    run "tests/complex" ["Root.hs"] [Change "Root.o"]
+    run "tests/complex" ["Root.hs","-ichildren"] [Change "Main.o"]
     clean "tests/complex"
     putStrLn "Success"
