@@ -7,7 +7,6 @@ import Development.Shake
 import Development.Shake.Command
 import Development.Shake.FilePath
 import System.Environment
-import Data.List
 import System.Exit
 import System.Process
 import qualified Data.HashMap.Strict as Map
@@ -45,7 +44,7 @@ main = do
         prefix <.> "makefile" *> \out -> do
             args <- args
             -- Use the default o/hi settings so we can parse the makefile properly
-            () <- cmd "ghc -M -dep-makefile" [out] args -- FIXME: Put back "-odir. -hidir. -hisuf=hi -osuf=o"
+            () <- cmd "ghc -M -dep-makefile" [out] args "-odir. -hidir. -hisuf=hi -osuf=o"
             mk <- liftIO $ makefile out
             need $ Map.elems $ source mk
         mk <- do cache <- newCache makefile; return $ cache $ prefix <.> "makefile"
@@ -55,7 +54,8 @@ main = do
         prefix <.> "result" *> \out -> do
             args <- args
             mk <- mk
-            let exec = cmd "ghc --make" args :: Action ()
+            -- if you don't specify an odir/hidir then impossible to reverse from the file name to the module
+            let exec = cmd "ghc --make -odir. -hidir." args :: Action ()
                 grab = need $ map oFile $ Map.keys $ source mk
             if threads == 1 then exec >> grab else grab >> exec
 
@@ -73,4 +73,5 @@ main = do
             need $ map hiFile $ Map.lookupDefault [] m $ imports mk
             when (threads /= 1) $ do
                 args <- args
-                cmd "ghc" (delete "Main.hs" args) "-c" [source mk Map.! m]
+                let isRoot x = x == "Main" || takeExtension x `elem` [".hs",".lhs"]
+                cmd "ghc -odir. -hidir." (filter (not . isRoot) args) "-c" [source mk Map.! m]
