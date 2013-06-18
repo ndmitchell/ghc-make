@@ -1,4 +1,4 @@
-{-# LANGUAGE RecordWildCards, PatternGuards #-}
+{-# LANGUAGE RecordWildCards, PatternGuards, DeriveDataTypeable #-}
 
 module Makefile(Makefile(..), Module(..), makefile) where
 
@@ -10,7 +10,7 @@ import qualified Data.HashMap.Strict as Map
 
 
 data Module = Module {moduleName :: [String], moduleBoot :: Bool}
-    deriving Eq
+    deriving (Typeable, Eq)
 
 instance Show Module where
     show (Module name boot) = intercalate "." name ++ (if boot then "[boot]" else "")
@@ -18,6 +18,12 @@ instance Show Module where
 instance Hashable Module where
     hashWithSalt salt (Module a b) = hashWithSalt salt a `xor` hashWithSalt salt b
 
+instance NFData Module where
+    rnf (Module a b) = rnf (a,b)
+
+instance Binary Module where
+    put (Module a b) = put a >> put b
+    get = do a <- get; b <- get; return $ Module a b
 
 data Makefile = Makefile
     {root :: !Module
