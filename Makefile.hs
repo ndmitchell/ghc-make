@@ -28,7 +28,7 @@ data Makefile = Makefile
 
 
 makefile :: FilePath -> IO Makefile
-makefile file = fmap (hack . foldl' f z . parseMakefile) $ readFile file
+makefile file = fmap (foldl' f z . parseMakefile) $ readFile file
     where
         z = Makefile (Module [] False) Map.empty Map.empty
 
