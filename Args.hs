@@ -84,6 +84,7 @@ flagsConflictingWithM :: [String]
 flagsConflictingWithM = [ "--show-iface", "-E", "-C", "-S", "-c"
                         , "--interactive", "-e", "--abi-hash"
                         , "--info"
+                        , "--help", "-?", "-help"
                         ]
 
 
