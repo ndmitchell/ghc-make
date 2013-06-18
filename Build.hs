@@ -59,7 +59,7 @@ main = do
                 grab = need $ map oFile $ Map.keys $ source mk
             if threads == 1 then exec >> grab else grab >> exec
 
-            let output = outputFile $ root mk
+            let output = outputFile $ source mk Map.! root mk
             -- ensure that if the file gets deleted we rerun this rule without first trying to
             -- need the output, since we don't have a rule to build the output
             doesFileExist output

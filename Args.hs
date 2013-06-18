@@ -19,7 +19,7 @@ data Args = Args
     ,modeGHC :: Bool -- ^ Are these flags which should go direct to GHC, not a --make/-M mode
     ,prefix :: FilePath -- ^ Where make should put its files, e.g. .ghc-make
     -- Where should things live
-    ,outputFile :: Module -> FilePath -- ^ Final output, .exe file
+    ,outputFile :: FilePath -> FilePath -- ^ Root source file, .exe file
     ,hiFile :: Module -> FilePath -- ^ .hi files
     ,oFile :: Module -> FilePath  -- ^ .o files
     ,hiModule :: FilePath -> Maybe Module
@@ -38,7 +38,7 @@ args = do
 
     let modeGHC = any hasArg $ "--version" : "--numeric-version" : flagsConflictingWithM
     let prefix = fromMaybe "" (getArg True "-odir" `mplus` getArg True "-hidir") </> ".ghc-make"
-    let outputFile (Module name _) = fromMaybe "" (getArg True "-outputdir") </> fromMaybe (joinPath name) (getArg False "-o") <.> exe
+    let outputFile file = fromMaybe "" (getArg True "-outputdir") </> fromMaybe (takeBaseName file) (getArg False "-o") <.> exe
     
     let (hiFile, hiModule) = extFileModule getArg "hi"
     let ( oFile,  oModule) = extFileModule getArg "o"
