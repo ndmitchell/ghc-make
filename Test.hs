@@ -70,7 +70,7 @@ main = do
         run "tests/simple" ["Main.hs"] [Change "Main.o"]
         run "tests/simple" ["Main.hs"] [Remain "Main.o"]
         touch "tests/simple/Main.hs"
-        run "tests/simple" ["Main.hs"] [Change "Main.o"]
+        run "tests/simple" ["Main.hs"] [Change "Main.o", Remain "A.o"]
         clean "tests/simple"
 
         run "." ["--version"] [Exit]
