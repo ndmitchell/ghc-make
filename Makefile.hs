@@ -26,8 +26,7 @@ instance Binary Module where
     get = do a <- get; b <- get; return $ Module a b
 
 data Makefile = Makefile
-    {root :: !Module
-    ,imports :: !(Map.HashMap Module [Module]) -- What does a module import
+    {imports :: !(Map.HashMap Module [Module]) -- What does a module import
     ,source :: !(Map.HashMap Module FilePath) -- Where is that modules source located
     }
     deriving Show
@@ -36,13 +35,13 @@ data Makefile = Makefile
 makefile :: FilePath -> IO Makefile
 makefile file = fmap (foldl' f z . parseMakefile) $ readFile file
     where
-        z = Makefile (Module [] False) Map.empty Map.empty
+        z = Makefile Map.empty Map.empty
 
         -- We rely on the order of the generated makefile, in particular
         -- * The Foo.o : Foo.hs line is always the first with Foo.o on the LHS
         -- * The root module (often Main.o) is always last
         f m (a,[b])
-            | Just o <- fromExt "o" a, not $ Map.member o $ source m = m{root=o, source=Map.insert o b $ source m}
+            | Just o <- fromExt "o" a, not $ Map.member o $ source m = m{source=Map.insert o b $ source m}
             | Just o <- fromExt "o" a, Just hi <- fromExt "hi" b = m{imports = Map.insertWith (++) o [hi] $ imports m}
         f m _ = m
 
