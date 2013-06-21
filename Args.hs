@@ -37,19 +37,20 @@ args = do
     let getArg b x = findArg b x argsGHC
 
     let modeGHC = any hasArg $ "--version" : "--numeric-version" : flagsConflictingWithM
-    let prefix = fromMaybe "" (getArg True "-odir" `mplus` getArg True "-hidir") </> ".ghc-make"
-    let outputFile file = fromMaybe "" (getArg True "-outputdir") </> fromMaybe (takeBaseName file) (getArg False "-o") <.> exe
+    let prefix = fromMaybe "" (getArg True ["-outputdir","-odir"] `mplus` getArg True ["-outputdir","-hidir"]) </> ".ghc-make"
+    let outputFile file = let s = fromMaybe (dropExtension file) (getArg False ["-o"])
+                          in if null $ takeExtension s then s <.> exe else s
     
     let (hiFile, hiModule) = extFileModule getArg "hi"
     let ( oFile,  oModule) = extFileModule getArg "o"
     return Args{..}
 
 
-extFileModule :: (Bool -> String -> Maybe String) -> String -> (Module -> FilePath, FilePath -> Maybe Module)
+extFileModule :: (Bool -> [String] -> Maybe String) -> String -> (Module -> FilePath, FilePath -> Maybe Module)
 extFileModule getArg ext = (extFile, extModule)
     where
-        extDir = fromMaybe "" $ getArg True $ "-" ++ ext ++ "dir"
-        extSuf = fromMaybe ext $ getArg True $ "-" ++ ext ++ "suf"
+        extDir = fromMaybe "" $ getArg True ["-outputdir","-" ++ ext ++ "dir"]
+        extSuf = fromMaybe ext $ getArg True ["-outputdir","-" ++ ext ++ "suf"]
         extFile (Module name boot) = extDir </> joinPath name <.> extSuf ++ (if boot then "-boot" else "")
         extModule s
             | "-boot" `isSuffixOf` s, Just (Module name _) <- extModule $ take (length s - 5) s = Just $ Module name True
@@ -66,14 +67,15 @@ parseThreads x = do
 
 
 -- | -odir is implicit since -odirfoo works, but -o is explicit
-findArg :: Bool -> String -> [String] -> Maybe String
-findArg implicit flag xs
-    | x1:x2:xs <- xs, flag == x1 = add x2 $ rec xs
-    | implicit, x:xs <- xs, Just x <- stripPrefix flag x = add (if "=" `isPrefixOf` x then drop 1 x else x) $ rec xs
+findArg :: Bool -> [String] -> [String] -> Maybe String
+findArg implicit flags xs
+    | x1:x2:xs <- xs, x1 `elem` flags = add x2 $ rec xs
+    | implicit, x:xs <- xs, Just x <- msum $ map (`stripPrefix` x) flags
+        = add (if "=" `isPrefixOf` x then drop 1 x else x) $ rec xs
     | x:xs <- xs = rec xs
     | otherwise = Nothing
     where add a b = Just $ fromMaybe a b
-          rec = findArg implicit flag
+          rec = findArg implicit flags
 
 
 -- | All flags conflicting with `ghc -M`.
