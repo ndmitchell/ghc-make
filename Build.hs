@@ -71,7 +71,10 @@ main = do
             let output = outputFile $ source mk Map.! root mk
             -- ensure that if the file gets deleted we rerun this rule without first trying to
             -- need the output, since we don't have a rule to build the output
-            doesFileExist output
+            b <- doesFileExist output
+            unless b $
+                error $ "Failed to build output file: " ++ output ++ "\n" ++
+                        "Most likely ghc-make has guessed the output location wrongly."
             need [output]
             writeFile' out ""
 
