@@ -46,6 +46,13 @@ main = do
             writeFileChanged out $ unlines argsGHC
         args <- return $ do need [prefix <.> "args"]; return argsGHC
 
+        -- A file containing the ghc-pkg list output
+        prefix <.> "pkgs" *> \out -> do
+            alwaysRerun
+            Stdout s <- cmd "ghc-pkg list --verbose"
+            writeFileChanged out s
+        pkgs <- return $ need [prefix <.> "pkgs"]
+
         -- A file containing the output of -M
         prefix <.> "makefile" *> \out -> do
             args <- args
@@ -63,6 +70,8 @@ main = do
         prefix <.> "result" *> \out -> do
             args <- args
             mk <- mk
+            pkgs
+
             -- if you don't specify an odir/hidir then impossible to reverse from the file name to the module
             let exec = cmd "ghc --make -odir. -hidir." args :: Action ()
                 grab = need $ map oFile $ Map.keys $ source mk
@@ -83,6 +92,7 @@ main = do
             let Just m = oModule o
             source <- askSource (AskSource m)
             need . (source:) . map hiFile =<< askImports (AskImports m)
+            pkgs
             when (threads /= 1) $ do
                 args <- args
                 let isRoot x = x == "Main" || takeExtension x `elem` [".hs",".lhs"]
