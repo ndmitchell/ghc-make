@@ -3,6 +3,7 @@
 module Build(main) where
 
 import Control.Monad
+import Data.Maybe
 import Development.Shake
 import Development.Shake.Command
 import Development.Shake.Classes
@@ -71,20 +72,24 @@ main = do
             args <- args
             mk <- mk
             pkgs
+            let output = fmap outputFile $ Map.lookup (Module ["Main"] False) $ source mk
 
             -- if you don't specify an odir/hidir then impossible to reverse from the file name to the module
-            let exec = cmd "ghc --make -odir. -hidir." args :: Action ()
+            let exec = when (isJust output || threads == 1) $
+                            cmd "ghc --make -odir. -hidir." args
                 grab = need $ map oFile $ Map.keys $ source mk
             if threads == 1 then exec >> grab else grab >> exec
 
-            let output = outputFile $ source mk Map.! root mk
-            -- ensure that if the file gets deleted we rerun this rule without first trying to
-            -- need the output, since we don't have a rule to build the output
-            b <- doesFileExist output
-            unless b $
-                error $ "Failed to build output file: " ++ output ++ "\n" ++
-                        "Most likely ghc-make has guessed the output location wrongly."
-            need [output]
+            case output of
+                Nothing -> return ()
+                Just output -> do
+                    -- ensure that if the file gets deleted we rerun this rule without first trying to
+                    -- need the output, since we don't have a rule to build the output
+                    b <- doesFileExist output
+                    unless b $
+                        error $ "Failed to build output file: " ++ output ++ "\n" ++
+                                "Most likely ghc-make has guessed the output location wrongly."
+                    need [output]
             writeFile' out ""
 
         let match x = do m <- oModule x `mplus` hiModule x; return [oFile m, hiFile m]
