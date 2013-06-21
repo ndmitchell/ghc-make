@@ -78,18 +78,22 @@ findArg implicit flags xs
           rec = findArg implicit flags
 
 
--- | All flags conflicting with `ghc -M`.
--- Obtained from ghc/Main.hs, `data PostLoadMode`, must be kept up to date:
--- All modes that are not `DoMkDependHS` (`-M`) are conflicting
--- (apart from `--make`).
-flagsConflictingWithM :: [String]
-flagsConflictingWithM = [ "--show-iface", "-E", "-C", "-S", "-c"
-                        , "--interactive", "-e", "--abi-hash"
-                        , "--info"
-                        , "--help", "-?", "-help"
-                        , "--supported-languages"
-                        , "--print-libdir"
-                        ]
+-- Obtained from the man page (listed in the same order as they appear there)
+-- and ghc/Main.hs, `data PostLoadMode`:
+flagsConflictingWithM = words $
+  -- "Help and verbosity options"
+  "-? --help -V " ++
+  "--supported-extensions --supported-languages " ++
+  "--info --version --numeric-version --print-libdir " ++
+  -- "Which phases to run"
+  "-E -C -S -c " ++
+  -- "Alternative modes of operation"
+  "--interactive -e " ++
+  -- "Interface file options"
+  "--show-iface " ++
+  -- Undocumented?
+  "--abi-hash"
+
 
 
 -- | Split flags into (Shake flags, GHC flags)
