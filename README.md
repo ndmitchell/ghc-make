@@ -1,5 +1,4 @@
-ghc-make
-========
+# ghc-make
 
 [![Build Status](https://travis-ci.org/ndmitchell/ghc-make.png)](https://travis-ci.org/ndmitchell/ghc-make)
 
