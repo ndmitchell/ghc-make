@@ -44,33 +44,33 @@ main = do
         prefix <.> "args" *> \out -> do
             alwaysRerun
             writeFileChanged out $ unlines argsGHC
-        args <- return $ do need [prefix <.> "args"]; return argsGHC
+        needArgs <- return $ do need [prefix <.> "args"]; return argsGHC
 
         -- A file containing the ghc-pkg list output
         prefix <.> "pkgs" *> \out -> do
             alwaysRerun
             (Stdout s, Stderr _) <- cmd "ghc-pkg list --verbose"
             writeFileChanged out s
-        pkgs <- return $ need [prefix <.> "pkgs"]
+        needPkgs <- return $ need [prefix <.> "pkgs"]
 
         -- A file containing the output of -M
         prefix <.> "makefile" *> \out -> do
-            args <- args
+            args <- needArgs
             -- Use the default o/hi settings so we can parse the makefile properly
             () <- cmd "ghc -M -dep-makefile" [out] args "-odir. -hidir. -hisuf=hi -osuf=o"
             mk <- liftIO $ makefile out
             need $ Map.elems $ source mk
-        mk <- do cache <- newCache (\x -> do need [x]; liftIO $ makefile x); return $ cache $ prefix <.> "makefile"
-        askImports <- addOracle $ \(AskImports x) -> do mk <- mk; return $ Map.lookupDefault [] x $ imports mk
-        askSource <- addOracle $ \(AskSource x) -> do mk <- mk; return $ source mk Map.! x
+        needMk <- do cache <- newCache (\x -> do need [x]; liftIO $ makefile x); return $ cache $ prefix <.> "makefile"
+        askImports <- addOracle $ \(AskImports x) -> do mk <- needMk; return $ Map.lookupDefault [] x $ imports mk
+        askSource <- addOracle $ \(AskSource x) -> do mk <- needMk; return $ source mk Map.! x
 
 
         -- The result, we can't want the object directly since it is painful to
         -- define a build rule for it because its name depends on both args and makefile
         prefix <.> "result" *> \out -> do
-            args <- args
-            mk <- mk
-            pkgs
+            args <- needArgs
+            mk <- needMk
+            needPkgs
             let output = fmap outputFile $ Map.lookup (Module ["Main"] False) $ source mk
 
             -- if you don't specify an odir/hidir then impossible to reverse from the file name to the module
@@ -96,8 +96,8 @@ main = do
             let Just m = oModule o
             source <- askSource (AskSource m)
             need . (source:) . map hiFile =<< askImports (AskImports m)
-            pkgs
+            needPkgs
             when (threads /= 1) $ do
-                args <- args
+                args <- needArgs
                 let isRoot x = x == "Main" || takeExtension x `elem` [".hs",".lhs"]
                 cmd "ghc -odir. -hidir." (filter (not . isRoot) args) "-c" [source]
