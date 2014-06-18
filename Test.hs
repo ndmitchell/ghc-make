@@ -9,6 +9,7 @@ import Control.Monad
 import System.Directory
 import System.Environment
 import System.Exit
+import System.IO
 import Development.Shake(removeFiles)
 import Development.Shake.FilePath
 
@@ -64,6 +65,11 @@ touch file = do
     evaluate $ length src
     writeFile file src
 
+copyFileUnix :: FilePath -> FilePath -> IO ()
+copyFileUnix from to = do
+    src <- readFile from
+    withBinaryFile to WriteMode $ \h -> hPutStr h $ filter (/= '\r') src
+
 main :: IO ()
 main = do
     args <- getArgs
@@ -72,6 +78,7 @@ main = do
      else do
         clean "tests/simple"
         run "tests/simple" ["Main.hs"] [Change "Main.o"]
+        copyFileUnix "tests/simple/.ghc-make.makefile" "tests/Simple.makefile"
         run "tests/simple" ["Main.hs"] [Remain "Main.o"]
         touch "tests/simple/Main.hs"
         run "tests/simple" ["Main.hs"] [Change "Main.o", Remain "A.o"]
@@ -81,5 +88,6 @@ main = do
 
         clean "tests/complex"
         run "tests/complex" ["Root.hs","-ichildren"] [Change "Main.o"]
+        copyFileUnix "tests/complex/.ghc-make.makefile" "tests/Complex.makefile"
         clean "tests/complex"
         putStrLn "Success"
