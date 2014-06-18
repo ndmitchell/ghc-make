@@ -11,7 +11,7 @@ import System.Environment
 import System.Exit
 import System.Process
 import qualified Data.HashMap.Strict as Map
-import Args
+import Arguments
 import Makefile
 
 
@@ -27,7 +27,7 @@ newtype AskSource = AskSource Module deriving (Show,Typeable,Eq,Hashable,Binary,
 
 main :: IO ()
 main = do
-    Args{..} <- args
+    Arguments{..} <- getArguments
 
     when modeGHC $
         exitWith =<< rawSystem "ghc" argsGHC

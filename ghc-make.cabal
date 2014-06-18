@@ -35,6 +35,6 @@ executable ghc-make
         unordered-containers >= 0.2.1,
         process >= 1.0
     other-modules:
-        Args
+        Arguments
         Build
         Makefile

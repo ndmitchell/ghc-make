@@ -1,6 +1,6 @@
 {-# LANGUAGE PatternGuards, RecordWildCards #-}
 
-module Args(Args(..), args) where
+module Arguments(Arguments(..), getArguments) where
 
 import Control.Monad
 import Data.Either
@@ -11,7 +11,7 @@ import Development.Shake.FilePath
 import Makefile
 
 
-data Args = Args
+data Arguments = Arguments
     {argsGHC :: [String] -- ^ Arguments to pass to ghc, does not include --make
     ,argsShake :: [String] -- ^ Arguments to pass to shake
     ,threads :: Int -- ^ Number of threads to use
@@ -27,8 +27,8 @@ data Args = Args
     }
 
 
-args :: IO Args
-args = do
+getArguments :: IO Arguments
+getArguments = do
     args <- getArgs
     let (argsThreads, argsRest) = partition (isJust . parseThreads) args
     let threads = max 1 $ fromMaybe 1 $ msum $ map parseThreads argsThreads
@@ -43,7 +43,7 @@ args = do
     
     let (hiFile, hiModule) = extFileModule getArg "hi"
     let ( oFile,  oModule) = extFileModule getArg "o"
-    return Args{..}
+    return Arguments{..}
 
 
 extFileModule :: (Bool -> [String] -> Maybe String) -> String -> (Module -> FilePath, FilePath -> Maybe Module)
