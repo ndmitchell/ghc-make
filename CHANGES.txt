@@ -1,5 +1,6 @@
 Changelog for ghc-make
 
+    Add parallelism
     Upgrade to shake-0.13
     Add test suite
     Support other GHC modes such as --version
