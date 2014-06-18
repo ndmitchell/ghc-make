@@ -89,5 +89,8 @@ main = do
         clean "tests/complex"
         run "tests/complex" ["Root.hs","-ichildren"] [Change "Main.o"]
         copyFileUnix "tests/complex/.ghc-make.makefile" "tests/Complex.makefile"
+        run "tests/complex" ["Root.hs","-ichildren","-j3"] [Remain "Main.o"]
+        clean "tests/complex"
+        run "tests/complex" ["Root.hs","-ichildren","-j3","--shake--report=-"] [Change "Main.o"]
         clean "tests/complex"
         putStrLn "Success"
