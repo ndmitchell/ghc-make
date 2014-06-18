@@ -81,18 +81,18 @@ findArg implicit flags xs
 -- Obtained from the man page (listed in the same order as they appear there)
 -- and ghc/Main.hs, `data PostLoadMode`:
 flagsConflictingWithM = words $
-  -- "Help and verbosity options"
-  "-? --help -V " ++
-  "--supported-extensions --supported-languages " ++
-  "--info --version --numeric-version --print-libdir " ++
-  -- "Which phases to run"
-  "-E -C -S -c " ++
-  -- "Alternative modes of operation"
-  "--interactive -e " ++
-  -- "Interface file options"
-  "--show-iface " ++
-  -- Undocumented?
-  "--abi-hash"
+    -- "Help and verbosity options"
+    "-? --help -V " ++
+    "--supported-extensions --supported-languages " ++
+    "--info --version --numeric-version --print-libdir " ++
+    -- "Which phases to run"
+    "-E -C -S -c " ++
+    -- "Alternative modes of operation"
+    "--interactive -e " ++
+    -- "Interface file options"
+    "--show-iface " ++
+    -- Undocumented?
+    "--abi-hash"
 
 
 
