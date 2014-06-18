@@ -3,6 +3,7 @@
 module Build(main) where
 
 import Control.Monad
+import Data.Either
 import Data.Maybe
 import Development.Shake
 import Development.Shake.Classes
@@ -17,7 +18,7 @@ import Makefile
 
 -- | Increment every time I change the rules in an incompatible way
 ghcMakeVer :: Int
-ghcMakeVer = 2
+ghcMakeVer = 3
 
 
 newtype AskImports = AskImports Module deriving (Show,Typeable,Eq,Hashable,Binary,NFData)
@@ -56,8 +57,9 @@ main = do
         -- A file containing the output of -M
         prefix <.> "makefile" *> \out -> do
             args <- needArgs
+            needPkgs
             -- Use the default o/hi settings so we can parse the makefile properly
-            () <- cmd "ghc -M -dep-makefile" [out] args "-odir. -hidir. -hisuf=hi -osuf=o"
+            () <- cmd "ghc -M -include-pkg-deps -dep-makefile" [out] args "-odir. -hidir. -hisuf=_hi_ -osuf=_o_"
             mk <- liftIO $ makefile out
             need $ Map.elems $ source mk
         needMk <- do cache <- newCache (\x -> do need [x]; liftIO $ makefile x); return $ cache $ prefix <.> "makefile"
@@ -70,7 +72,6 @@ main = do
         prefix <.> "result" *> \out -> do
             args <- needArgs
             mk <- needMk
-            needPkgs
             let output = fmap outputFile $ Map.lookup (Module ["Main"] False) $ source mk
 
             -- if you don't specify an odir/hidir then impossible to reverse from the file name to the module
@@ -95,8 +96,8 @@ main = do
         match &?> \[o,hi] -> do
             let Just m = oModule o
             source <- askSource (AskSource m)
-            need . (source:) . map hiFile =<< askImports (AskImports m)
-            needPkgs
+            (files,mods) <- fmap partitionEithers $ askImports (AskImports m)
+            need $ source : map hiFile mods ++ files
             when (threads /= 1) $ do
                 args <- needArgs
                 let isRoot x = x == "Main" || takeExtension x `elem` [".hs",".lhs"]
