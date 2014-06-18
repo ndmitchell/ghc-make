@@ -5,6 +5,7 @@ module Makefile(Makefile(..), Module(..), makefile) where
 import Data.List
 import Development.Shake.FilePath
 import Development.Shake.Classes
+import Development.Shake.Util
 import Data.Bits
 import qualified Data.HashMap.Strict as Map
 
@@ -50,14 +51,3 @@ fromExt ext x
     | "-boot" `isSuffixOf` x, Just (Module m _) <- fromExt ext $ take (length x - 5) x = Just $ Module m True
     | takeExtension x == "." ++ ext = Just $ Module (splitDirectories $ dropExtension x) False
     | otherwise = Nothing
-
-
-parseMakefile :: String -> [(FilePath, [FilePath])]
-parseMakefile = concatMap f . join . lines
-    where
-        join (x1:x2:xs) | "\\" `isSuffixOf` x1 = join $ (init x1 ++ x2) : xs
-        join (x:xs) = x : join xs
-        join [] = []
-
-        f x = [(a, words $ drop 1 b) | a <- words a]
-            where (a,b) = break (== ':') $ takeWhile (/= '#') x
