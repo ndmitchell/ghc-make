@@ -5,7 +5,6 @@ module Build(main) where
 import Control.Monad
 import Data.Maybe
 import Development.Shake
-import Development.Shake.Command
 import Development.Shake.Classes
 import Development.Shake.FilePath
 import System.Environment
@@ -61,7 +60,7 @@ main = do
             () <- cmd "ghc -M -dep-makefile" [out] args "-odir. -hidir. -hisuf=hi -osuf=o"
             mk <- liftIO $ makefile out
             need $ Map.elems $ source mk
-        mk <- do cache <- newCache makefile; return $ cache $ prefix <.> "makefile"
+        mk <- do cache <- newCache (\x -> do need [x]; liftIO $ makefile x); return $ cache $ prefix <.> "makefile"
         askImports <- addOracle $ \(AskImports x) -> do mk <- mk; return $ Map.lookupDefault [] x $ imports mk
         askSource <- addOracle $ \(AskSource x) -> do mk <- mk; return $ source mk Map.! x
 
