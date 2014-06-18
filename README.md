@@ -16,7 +16,7 @@ The `ghc-make` program produces a handful of metadata files which are stored wit
 
 #### What GHC features are unsupported?
 
-Anything not captured by `ghc -M` will not be tracked, which includes additional dependencies registered by Template Haskell.
+Anything not captured by `ghc -M` will not be tracked, including dependencies registered by Template Haskell and `#include` files.
 
 #### Why is it faster?
 
@@ -28,11 +28,11 @@ When things have changed `ghc-make` also runs `ghc -M` to get a list of dependen
 
 #### Does `ghc-make` provide parallel builds?
 
-No, but [ghc-parmake](http://hackage.haskell.org/package/ghc-parmake) does. However, generally I find you need a parallel factor of 3x to match `ghc --make` on a single core, since `ghc --make` does a lot of caching that is unavailable to `ghc-parmake`.
+Yes, pass `-j4` or similar to build using 4 cores. However, generally I find you need a parallel factor of 3x to match `ghc --make` on a single core, since `ghc --make` does a lot of caching that is unavailable to `ghc-make`.
 
 #### How it it implemented?
 
-This program uses the [Shake library](https://github.com/ndmitchell/shake) for dependency tracking and `ghc --make` for building. The code is not very complex.
+This program uses the [Shake library](https://github.com/ndmitchell/shake#readme) for dependency tracking and `ghc --make` for building. The code is not very complex.
 
 To pass options to the underlying Shake build system prefix them with `--shake`, for example `--shake--timings` will print information about how long each phase takes and `--shake--help` will list the available Shake options.
 
