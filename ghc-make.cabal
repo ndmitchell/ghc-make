@@ -31,7 +31,7 @@ executable ghc-make
     ghc-options: -threaded
     build-depends:
         base == 4.*,
-        shake >= 0.11,
+        shake >= 0.13,
         unordered-containers >= 0.2.1,
         process >= 1.0
     other-modules:

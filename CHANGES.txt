@@ -1,6 +1,6 @@
 Changelog for ghc-make
 
-    Upgrade to shake-0.11
+    Upgrade to shake-0.13
     Add test suite
     Support other GHC modes such as --version
 0.1
