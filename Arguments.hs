@@ -3,6 +3,7 @@
 module Arguments(Arguments(..), getArguments) where
 
 import Control.Monad
+import Data.Char
 import Data.Either
 import Data.List
 import Data.Maybe
@@ -53,10 +54,15 @@ extFileModule getArg ext = (extFile, extModule)
         extSuf = fromMaybe ext $ getArg True ["-outputdir","-" ++ ext ++ "suf"]
         extFile (Module name boot) = extDir </> joinPath name <.> extSuf ++ (if boot then "-boot" else "")
         extModule s
-            | "-boot" `isSuffixOf` s, Just (Module name _) <- extModule $ take (length s - 5) s = Just $ Module name True
+            | "-boot" `isSuffixOf` s, Just (Module name _) <- extModule $ take (length s - 5) s = newModule name True
             | extDir `isPrefixOf` s && extSuf `isSuffixOf` s
-                = Just $ Module (splitDirectories $ dropWhile isPathSeparator $ dropExtensions $ drop (length extDir) s) False
+                = newModule (splitDirectories $ dropWhile isPathSeparator $ dropExtensions $ drop (length extDir) s) False
             | otherwise = Nothing
+
+newModule :: [String] -> Bool -> Maybe Module
+newModule xs y = if all isValid xs then Just $ Module xs y else Nothing
+    where isValid (x:xs) = isUpper x && all (\x -> isAlphaNum x || x `elem` "\'_") xs
+          isValid [] = False
 
 
 parseThreads :: String -> Maybe Int
