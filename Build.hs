@@ -92,7 +92,7 @@ main = do
             writeFile' out ""
 
         let match x = do m <- oModule x `mplus` hiModule x; return [oFile m, hiFile m]
-        match ?>> \[o,hi] -> do
+        match &?> \[o,hi] -> do
             let Just m = oModule o
             source <- askSource (AskSource m)
             need . (source:) . map hiFile =<< askImports (AskImports m)
