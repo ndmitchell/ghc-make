@@ -38,7 +38,8 @@ expect (Remain x) = do
 
 
 run :: FilePath -> [String] -> [Expect] -> IO ()
-run dir args es =
+run dir args es = do
+    putStrLn $ "Running " ++ unwords (dir:args)
     handle (\(e :: ExitCode) -> if Exit `elem` es then return () else error "Unexpected exit") $ do
         withCurrentDirectory dir $ withArgs args $ do
             acts <- mapM expect es
@@ -47,7 +48,9 @@ run dir args es =
             sequence_ acts
 
 clean :: FilePath -> IO ()
-clean dir = removeFiles dir ["//*.hi","//*.hi-boot","//*.o","//*.o-boot","//.ghc-make.*","//Main" <.> exe, "//Root" <.> exe]
+clean dir = do
+    putStrLn $ "Cleaning " ++ dir
+    removeFiles dir ["//*.hi","//*.hi-boot","//*.o","//*.o-boot","//.ghc-make.*","//Main" <.> exe, "//Root" <.> exe]
 
 withCurrentDirectory :: FilePath -> IO () -> IO ()
 withCurrentDirectory dir act = do
@@ -56,6 +59,7 @@ withCurrentDirectory dir act = do
 
 touch :: FilePath -> IO ()
 touch file = do
+    putStrLn $ "Touching " ++ file
     src <- readFile file
     evaluate $ length src
     writeFile file src
