@@ -1,6 +1,4 @@
-# ghc-make
-
-[![Build Status](https://travis-ci.org/ndmitchell/ghc-make.png)](https://travis-ci.org/ndmitchell/ghc-make)
+# ghc-make [![Build Status](https://travis-ci.org/ndmitchell/ghc-make.svg)](https://travis-ci.org/ndmitchell/ghc-make)
 
 An alternative to `ghc --make` which supports parallel compilation of modules and runs faster when nothing needs compiling.
 
