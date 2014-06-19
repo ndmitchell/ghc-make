@@ -13,11 +13,11 @@ description:
     The @ghc-make@ program can be used as a drop-in replacement for @ghc@. This program
     targets two use cases:
     .
-    * If there is no work to do (i.e. the compiled files are up-to-date), the build will run faster,
-    sometimes significantly so.
-    .
     * If a flag such as @-j4@ is passed, the modules will be compiled in parallel.
     If the available parallelism is greater than a factor of 3, the build will probably run faster.
+    .
+    * If there is no work to do (i.e. the compiled files are up-to-date), the build will run faster,
+    sometimes significantly so.
     .
     See the readme for full details: <https://github.com/ndmitchell/ghc-make#readme>.
 homepage:           https://github.com/ndmitchell/ghc-make#readme
