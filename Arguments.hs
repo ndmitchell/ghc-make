@@ -8,6 +8,7 @@ import Data.Either
 import Data.List
 import Data.Maybe
 import System.Environment
+import System.Exit
 import Development.Shake.FilePath
 import Makefile
 
@@ -27,10 +28,31 @@ data Arguments = Arguments
     ,oModule :: FilePath -> Maybe Module
     }
 
+helpMessage =
+    ["ghc-make, (C) Neil Mitchell"
+    ,""
+    ,"  ghc-make [ghc-options] --shake[shake-options] [-jN]"
+    ,""
+    ,"ghc-make is a drop-in replacement for 'ghc', and accepts GHC arugments."
+    ,"For GHC arguments, see 'ghc --help' or <http://haskell.org/haskellwiki/GHC>."
+    ,""
+    ,"ghc-make uses 'shake', and accepts Shake arguments prefixed by '--shake'."
+    ,"For Shake arguments, see 'ghc-make --shake--help'."
+    ,"As an example, to write a profile report to stdout pass '--shake--profile=-'."
+    ,""
+    ,"In addition, 'ghc-make' accepts the following option:"
+    ,""
+    ,"  -jN --threads=N   Allow N modules to compile in parallel (defaults to 1)."
+    ]
+
 
 getArguments :: IO Arguments
 getArguments = do
     args <- getArgs
+    when (any (`elem` helpFlags) args) $ do
+        putStrLn $ unlines helpMessage
+        exitSuccess
+
     let (argsThreads, argsRest) = partition (isJust . parseThreads) args
     let threads = max 1 $ fromMaybe 1 $ msum $ map parseThreads argsThreads
     let (argsShake, argsGHC) = splitFlags $ delete "--make" argsRest
@@ -84,6 +106,8 @@ findArg implicit flags xs
     where add a b = Just $ fromMaybe a b
           rec = findArg implicit flags
 
+
+helpFlags = words "-? --help"
 
 -- Obtained from the man page (listed in the same order as they appear there)
 -- and ghc/Main.hs, `data PostLoadMode`:

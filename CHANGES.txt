@@ -1,5 +1,6 @@
 Changelog for ghc-make
 
+    Override --help
     #2, detect package upgrades and recompile
     Add parallelism
     Upgrade to shake-0.13
