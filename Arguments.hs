@@ -38,7 +38,7 @@ helpMessage =
     ,""
     ,"ghc-make uses 'shake', and accepts Shake arguments prefixed by '--shake'."
     ,"For Shake arguments, see 'ghc-make --shake--help'."
-    ,"As an example, to write a profile report to stdout pass '--shake--profile=-'."
+    ,"As an example, to write a profile report to stdout pass '--shake--report=-'."
     ,""
     ,"In addition, 'ghc-make' accepts the following option:"
     ,""

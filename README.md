@@ -34,7 +34,7 @@ When things have changed `ghc-make` also runs `ghc-pkg list` and `ghc -M` to get
 
 This program uses the [Shake library](https://github.com/ndmitchell/shake#readme) for dependency tracking and `ghc --make` for building.
 
-To pass options to the underlying Shake build system prefix them with `--shake`, for example `--shake--profile=-` will write a profile report to stdout and `--shake--help` will list the available Shake options.
+To pass options to the underlying Shake build system prefix them with `--shake`, for example `--shake--report=-` will write a profile report to stdout and `--shake--help` will list the available Shake options.
 
 #### Should GHC just use Shake directly?
 
