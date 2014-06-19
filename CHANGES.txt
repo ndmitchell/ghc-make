@@ -1,5 +1,6 @@
 Changelog for ghc-make
 
+    Support the -o flag in conjunction with -j
     Override --help
     #2, detect package upgrades and recompile
     Add parallelism
