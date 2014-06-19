@@ -4,7 +4,7 @@ An alternative to `ghc --make` which supports parallel compilation of modules an
 
 #### How do I use it?
 
-Install `ghc-make` (`cabal update && cabal install ghc-make`). Then replace your calls to `ghc my -arguments` with `ghc-make my -arguments`. All arguments and flags supported by `ghc` are supported by `ghc-make` - it is intended as a drop-in replacement.
+Install `ghc-make` (`cabal update && cabal install ghc-make`). Then replace your calls to `ghc my -arguments` with `ghc-make my -arguments`. Almost all arguments and flags supported by `ghc` are supported by `ghc-make` - it is intended as a drop-in replacement.
 
 #### What should I see?
 
