@@ -10,11 +10,16 @@ maintainer:         Neil Mitchell <ndmitchell@gmail.com>
 copyright:          Neil Mitchell 2013-2014
 synopsis:           Accelerated version of ghc --make
 description:
-    The @ghc-make@ program can be used as an alternative to @ghc --make@. When the build has some
-    work to do it will perform slower than @ghc --make@ alone. When there is no work to do, the build
-    will run faster, sometimes significantly so.
+    The @ghc-make@ program can be used as a drop-in replacement for @ghc@. This program
+    targets two use cases:
     .
-    See the readme for full details <https://github.com/ndmitchell/ghc-make#readme>
+    * If there is no work to do (i.e. the compiled files are up-to-date), the build will run faster,
+    sometimes significantly so.
+    .
+    * If a flag such as @-j4@ is passed, the modules will be compiled in parallel.
+    If the available parallelism is greater than a factor of 3, the build will probably run faster.
+    .
+    See the readme for full details: <https://github.com/ndmitchell/ghc-make#readme>.
 homepage:           https://github.com/ndmitchell/ghc-make#readme
 bug-reports:        https://github.com/ndmitchell/ghc-make/issues
 extra-source-files:
