@@ -83,8 +83,11 @@ main = do
         touch "tests/simple/Main.hs"
         run "tests/simple" ["Main.hs"] [Change "Main.o", Remain "A.o"]
         clean "tests/simple"
+        run "tests/simple" ["Main.hs","-j3","-o","simple" <.> exe] [Change $ "simple" <.> exe]
+        clean "tests/simple"
 
         run "." ["--version"] [Exit]
+        run "." ["--help"] [Exit]
 
         clean "tests/complex"
         run "tests/complex" ["Root.hs","-ichildren"] [Change "Main.o"]
@@ -92,5 +95,6 @@ main = do
         run "tests/complex" ["Root.hs","-ichildren","-j3"] [Remain "Main.o"]
         clean "tests/complex"
         run "tests/complex" ["Root.hs","-ichildren","-j3","--shake--report=-"] [Change "Main.o"]
+        run "tests/complex" ["Root.hs","-ichildren"] [Remain "Main.o"]
         clean "tests/complex"
         putStrLn "Success"
