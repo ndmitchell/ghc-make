@@ -68,6 +68,7 @@ newModule xs y = if all isValid xs then Just $ Module xs y else Nothing
 parseThreads :: String -> Maybe Int
 parseThreads x = do
     x <- msum $ map (`stripPrefix` x) ["-threads","--threads","-j"]
+    x <- return $ fromMaybe x $ stripPrefix "=" x
     [(i,"")] <- return $ reads x
     return i
 
