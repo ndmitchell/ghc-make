@@ -22,6 +22,8 @@ data Arguments = Arguments
     ,prefix :: FilePath -- ^ Where make should put its files, e.g. .ghc-make
     -- Where should things live
     ,outputFile :: FilePath -> FilePath -- ^ Root source file, .exe file
+    ,hiDir :: FilePath -- ^ -hidir
+    ,oDir :: FilePath -- ^ -odir
     ,hiFile :: Module -> FilePath -- ^ .hi files
     ,oFile :: Module -> FilePath  -- ^ .o files
     ,hiModule :: FilePath -> Maybe Module
@@ -64,13 +66,13 @@ getArguments = do
     let outputFile file = let s = fromMaybe (dropExtension file) (getArg False ["-o"])
                           in if null $ takeExtension s then s <.> exe else s
     
-    let (hiFile, hiModule) = extFileModule getArg "hi"
-    let ( oFile,  oModule) = extFileModule getArg "o"
+    let (hiDir, hiFile, hiModule) = extFileModule getArg "hi"
+    let ( oDir,  oFile,  oModule) = extFileModule getArg "o"
     return Arguments{..}
 
 
-extFileModule :: (Bool -> [String] -> Maybe String) -> String -> (Module -> FilePath, FilePath -> Maybe Module)
-extFileModule getArg ext = (extFile, extModule)
+extFileModule :: (Bool -> [String] -> Maybe String) -> String -> (FilePath, Module -> FilePath, FilePath -> Maybe Module)
+extFileModule getArg ext = (extDir, extFile, extModule)
     where
         extDir = fromMaybe "" $ getArg True ["-outputdir","-" ++ ext ++ "dir"]
         extSuf = fromMaybe ext $ getArg True ["-outputdir","-" ++ ext ++ "suf"]

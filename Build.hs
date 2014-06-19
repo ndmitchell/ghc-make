@@ -101,4 +101,4 @@ main = do
             when (threads /= 1) $ do
                 args <- needArgs
                 let isRoot x = x == "Main" || takeExtension x `elem` [".hs",".lhs"]
-                cmd "ghc -odir. -hidir." (filter (not . isRoot) args) "-o" [o] "-c" [source]
+                cmd "ghc -odir. -hidir." (filter (not . isRoot) args) (if hiDir == "" then [] else ["-i" ++ hiDir]) "-o" [o] "-c" [source]

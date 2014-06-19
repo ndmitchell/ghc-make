@@ -85,6 +85,8 @@ main = do
         clean "tests/simple"
         run "tests/simple" ["Main.hs","-j3","-o","simple" <.> exe] [Change $ "simple" <.> exe]
         clean "tests/simple"
+        run "tests/simple" ["Main.hs","-j3","-hidir","his","-o","simple" <.> exe] [Change $ "simple" <.> exe]
+        clean "tests/simple"
 
         run "." ["--version"] [Exit]
         run "." ["--help"] [Exit]
