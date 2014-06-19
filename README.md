@@ -14,7 +14,9 @@ The `ghc-make` program produces a handful of metadata files which are stored wit
 
 #### How do I turn on parallel module compilation?
 
-Pass `-j4` to build using 4 cores. In my experience you usually need a parallel factor of 3x to match `ghc --make` on a single core, since `ghc --make` does a lot of caching that is unavailable to `ghc-make`. 
+Pass `-j4` to build using 4 cores. In my experience you usually need a parallel factor of 3x to match `ghc --make` on a single core, since `ghc --make` does a lot of caching that is unavailable to `ghc-make`.
+
+To use `ghc-make` with Cabal, try `cabal build --with-ghc=ghc-make --ghc-options=-j4`. (This technique is due to the [`ghc-parmake`](https://github.com/23Skidoo/ghc-parmake) project, which also does parallel `ghc --make` compiles.)
 
 #### What GHC features are unsupported?
 
