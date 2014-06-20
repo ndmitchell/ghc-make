@@ -1,4 +1,4 @@
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE ScopedTypeVariables, RecordWildCards #-}
 
 module Test(main) where
 
@@ -9,16 +9,19 @@ import Control.Monad
 import System.Directory
 import System.Environment
 import System.Exit
-import System.IO
+import System.Mem
+import System.Random
 import Development.Shake(removeFiles)
 import Development.Shake.FilePath
 
+
+---------------------------------------------------------------------
+-- TEST EXPECTATIONS
 
 data Expect = Exit
             | Change FilePath
             | Remain FilePath
               deriving Eq
-
 
 mtime file = do
     b <- doesFileExist file
@@ -48,11 +51,6 @@ run dir args es = do
             Main.main
             sequence_ acts
 
-clean :: FilePath -> IO ()
-clean dir = do
-    putStrLn $ "Cleaning " ++ dir
-    removeFiles dir ["//*.hi","//*.hi-boot","//*.o","//*.o-boot","//.ghc-make.*","//Main" <.> exe, "//Root" <.> exe]
-
 withCurrentDirectory :: FilePath -> IO () -> IO ()
 withCurrentDirectory dir act = do
     curdir <- getCurrentDirectory
@@ -65,10 +63,74 @@ touch file = do
     evaluate $ length src
     writeFile file src
 
-copyFileUnix :: FilePath -> FilePath -> IO ()
-copyFileUnix from to = do
-    src <- readFile from
-    withBinaryFile to WriteMode $ \h -> hPutStr h $ filter (/= '\r') src
+sleep :: Double -> IO ()
+sleep x = threadDelay $ ceiling $ x * 1000000
+
+retry :: Int -> IO a -> IO a
+retry i x | i <= 0 = error "retry ran out of times"
+retry 1 x = x
+retry i x = do
+    res <- try x
+    case res of
+        Left (_ :: SomeException) -> retry (i-1) x
+        Right v -> return v
+
+
+---------------------------------------------------------------------
+-- RANDOM TESTS
+
+clean :: FilePath -> IO ()
+clean dir = do
+    putStrLn $ "Cleaning " ++ dir
+    -- Retry a lot, sometimes Windows gets caught up
+    retry 10 $ do
+        performGC
+        removeFiles dir $
+            ["//*.hi","//*.hi-boot","//*.o","//*.o-boot"
+            ,"//*.hix","//*.hix-boot","//*.ox","//*.ox-boot"
+            ,"//.ghc-make.*"
+            ,"//Result" <.> exe, "//Main" <.> exe, "//Root" <.> exe]
+
+data Test = Test
+    {hisuf :: String
+    ,osuf :: String
+    ,hidir :: String
+    ,odir :: String
+    ,outputdir :: String
+    ,output :: String
+    ,threads :: Int
+    } deriving Show
+
+newTest :: FilePath -> IO Test
+newTest prefix = do
+    hisuf <- pick ["","hi","hix"]
+    osuf <- pick ["","o","ox"]
+    hidir <- pick $ prefixed ["","hidir","bothdir"]
+    odir <- pick $ prefixed ["","odir","bothdir"]
+    outputdir <- pick $ prefixed ["","","bothdir","oodir"]
+    output <- pick $ prefixed ["","Result","Result" <.> exe]
+    threads <- pick [1,2,3,4]
+    let res = Test{..}
+    putStrLn $ "Testing with " ++ show res
+    return res
+    where
+        prefixed xs = xs ++ [if x == "" then "" else prefix </> x | x <- xs]
+        pick xs = do i <- randomRIO (0, length xs - 1); return $ xs !! i
+
+testFlags :: Test -> [String]
+testFlags Test{..} =
+    flag "hisuf" hisuf ++ flag "osuf" osuf ++ flag "hidir" hidir ++ flag "odir" odir ++
+    flag "outputdir" outputdir ++ flag "o" output ++
+    ["-j" ++ show threads | threads > 1]
+    where flag a b = if b == "" then [] else ['-':a, b]
+
+objName :: Test -> String -> FilePath
+objName Test{..} x =
+    (if outputdir == "" then odir else outputdir) </> x <.> (if osuf == "" then "o" else osuf)
+
+
+---------------------------------------------------------------------
+-- MAIN DRIVER
 
 main :: IO ()
 main = do
@@ -76,27 +138,38 @@ main = do
     if args /= [] then
         withArgs args Main.main
      else do
-        clean "tests/simple"
-        run "tests/simple" ["Main.hs"] [Change "Main.o"]
-        copyFileUnix "tests/simple/.ghc-make.makefile" "tests/Simple.makefile"
-        run "tests/simple" ["Main.hs"] [Remain "Main.o"]
-        touch "tests/simple/Main.hs"
-        run "tests/simple" ["Main.hs"] [Change "Main.o", Remain "A.o"]
-        clean "tests/simple"
-        run "tests/simple" ["Main.hs","-j3","-o","simple" <.> exe] [Change $ "simple" <.> exe]
-        clean "tests/simple"
-        run "tests/simple" ["Main.hs","-j3","-hidir","his","-o","simple" <.> exe] [Change $ "simple" <.> exe]
-        clean "tests/simple"
-
         run "." ["--version"] [Exit]
         run "." ["--help"] [Exit]
 
-        clean "tests/complex"
-        run "tests/complex" ["Root.hs","-ichildren"] [Change "Main.o"]
-        copyFileUnix "tests/complex/.ghc-make.makefile" "tests/Complex.makefile"
-        run "tests/complex" ["Root.hs","-ichildren","-j3"] [Remain "Main.o"]
-        clean "tests/complex"
-        run "tests/complex" ["Root.hs","-ichildren","-j3","--shake--report=-"] [Change "Main.o"]
-        run "tests/complex" ["Root.hs","-ichildren"] [Remain "Main.o"]
-        clean "tests/complex"
+        let count = 10
+        cdir <- getCurrentDirectory
+        forM_ [1..count] $ \i -> do
+            putStrLn $ "RUNNING TEST " ++ show i ++ " of " ++ show count
+
+            -- Use the simple test to track things rebuild when necessary
+            do
+                t <- newTest $ cdir </> "tests/simple"
+                let t0 = t{threads=1}
+                let main_o = objName t "Main"
+                let a_o = objName t "A"
+                clean "tests/simple"
+                run "tests/simple" ("Main.hs":testFlags t0) [Change main_o]
+                run "tests/simple" ("Main.hs":testFlags t0) [Remain main_o]
+                touch "tests/simple/Main.hs"
+                run "tests/simple" ("Main.hs":testFlags t) [Change main_o, Remain a_o]
+                sleep 1
+                touch "tests/simple/Main.hs"
+                run "tests/simple" ("Main.hs":testFlags t) [Change main_o, Remain a_o]
+                run "tests/simple" ("Main.hs":testFlags t) [Remain main_o]
+                clean "tests/simple"
+
+            -- Use the complex test to track that we support all the weird features
+            do
+                t <- newTest $ cdir </> "tests/complex"
+                let main_o = objName t "Main"
+                clean "tests/complex"
+                run "tests/complex" ("Root.hs":"-ichildren":"--shake--report=-":testFlags t) [Change main_o]
+                run "tests/complex" ("Root.hs":"-ichildren":testFlags t) [Remain main_o]
+                clean "tests/complex"
+
         putStrLn "Success"
