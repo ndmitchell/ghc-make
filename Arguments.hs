@@ -75,7 +75,7 @@ extFileModule :: (Bool -> [String] -> Maybe String) -> String -> (FilePath, Modu
 extFileModule getArg ext = (extDir, extFile, extModule)
     where
         extDir = fromMaybe "" $ getArg True ["-outputdir","-" ++ ext ++ "dir"]
-        extSuf = fromMaybe ext $ getArg True ["-outputdir","-" ++ ext ++ "suf"]
+        extSuf = fromMaybe ext $ getArg True ["-" ++ ext ++ "suf"]
         extFile (Module name boot) = extDir </> joinPath name <.> extSuf ++ (if boot then "-boot" else "")
         extModule s
             | "-boot" `isSuffixOf` s, Just (Module name _) <- extModule $ take (length s - 5) s = newModule name True
