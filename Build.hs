@@ -72,7 +72,8 @@ main = do
         prefix <.> "result" *> \out -> do
             args <- needArgs
             mk <- needMk
-            let output = fmap outputFile $ Map.lookup (Module ["Main"] False) $ source mk
+            let output = if "-no-link" `elem` argsGHC then Nothing
+                         else fmap outputFile $ Map.lookup (Module ["Main"] False) $ source mk
 
             -- if you don't specify an odir/hidir then impossible to reverse from the file name to the module
             let exec = when (isJust output || threads == 1) $

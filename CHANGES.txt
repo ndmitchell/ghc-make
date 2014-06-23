@@ -1,5 +1,6 @@
 Changelog for ghc-make
 
+    #3, support -no-link flag
 0.2
     Support the -hidir flag in conjunction with -j
     Support the -o flag in conjunction with -j

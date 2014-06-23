@@ -97,6 +97,7 @@ data Test = Test
     ,hidir :: String
     ,odir :: String
     ,outputdir :: String
+    ,nolink :: Bool
     ,output :: String
     ,threads :: Int
     } deriving Show
@@ -109,6 +110,7 @@ newTest prefix = do
     odir <- pick $ prefixed ["","odir","bothdir"]
     outputdir <- pick $ prefixed ["","","bothdir","oodir"]
     output <- pick $ prefixed ["","Result","Result" <.> exe]
+    nolink <- pick [False,False,True]
     threads <- pick [1,2,3,4]
     let res = Test{..}
     putStrLn $ "Testing with " ++ show res
@@ -120,7 +122,7 @@ newTest prefix = do
 testFlags :: Test -> [String]
 testFlags Test{..} =
     flag "hisuf" hisuf ++ flag "osuf" osuf ++ flag "hidir" hidir ++ flag "odir" odir ++
-    flag "outputdir" outputdir ++ flag "o" output ++
+    flag "outputdir" outputdir ++ flag "o" output ++ ["-no-link" | nolink] ++
     ["-j" ++ show threads | threads > 1]
     where flag a b = if b == "" then [] else ['-':a, b]
 
