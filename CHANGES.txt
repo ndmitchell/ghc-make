@@ -1,5 +1,6 @@
 Changelog for ghc-make
 
+    Support GHC-7.8, which requires -dep-suffix
     #3, support -no-link flag
 0.2
     Support the -hidir flag in conjunction with -j
