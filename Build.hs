@@ -41,11 +41,16 @@ main = do
     withArgs argsShake $ shakeArgs opts $ do
         want [prefix <.> "result"]
 
-        -- A file containing the GHC arguments
+        -- A files containing the GHC arguments
         prefix <.> "args" *> \out -> do
             alwaysRerun
-            writeFileChanged out $ unlines argsGHC
-        needArgs <- return $ do need [prefix <.> "args"]; return argsGHC
+            writeFileChanged out $ unlines argsGHCNonLink
+        needArgs <- return $ do need [prefix <.> "args"]; return argsGHCNonLink
+        prefix <.> "link-args" *> \out -> do
+            alwaysRerun
+            exists <- doesFileExist out
+            unless (noLink && exists) . writeFileChanged out $ unlines argsGHCLink
+        needLinkArgs <- return $ do need [prefix <.> "link-args"]; return argsGHCLink
 
         -- A file containing the ghc-pkg list output
         prefix <.> "pkgs" *> \out -> do
@@ -71,13 +76,14 @@ main = do
         -- define a build rule for it because its name depends on both args and makefile
         prefix <.> "result" *> \out -> do
             args <- needArgs
+            linkArgs <- needLinkArgs
             mk <- needMk
-            let output = if "-no-link" `elem` argsGHC then Nothing
+            let output = if noLink then Nothing
                          else fmap outputFile $ Map.lookup (Module ["Main"] False) $ source mk
 
             -- if you don't specify an odir/hidir then impossible to reverse from the file name to the module
             let exec = when (isJust output || threads == 1) $
-                            cmd "ghc --make -odir. -hidir." args
+                            cmd "ghc --make -odir. -hidir." (args ++ linkArgs)
                 grab = need $ map oFile $ Map.keys $ source mk
             if threads == 1 then exec >> grab else grab >> exec
 

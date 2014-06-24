@@ -15,6 +15,9 @@ import Makefile
 
 data Arguments = Arguments
     {argsGHC :: [String] -- ^ Arguments to pass to ghc, does not include --make
+    ,argsGHCNonLink :: [String] -- ^ Non linking related arguments to pass to ghc, does not include --make and -no-link
+    ,argsGHCLink :: [String] -- ^ Linking related arguments to pass to ghc, does not include --make and -no-link
+    ,noLink :: Bool -- ^ True if -no-link was passed
     ,argsShake :: [String] -- ^ Arguments to pass to shake
     ,threads :: Int -- ^ Number of threads to use
     -- Interpretation of the flags
@@ -58,6 +61,8 @@ getArguments = do
     let (argsThreads, argsRest) = partition (isJust . parseThreads) args
     let threads = max 1 $ fromMaybe 1 $ msum $ map parseThreads argsThreads
     let (argsShake, argsGHC) = splitFlags $ delete "--make" argsRest
+        (argsGHCNonLink, argsGHCLink) = span (/= "-o") (filter (/= "-no-link") argsGHC)
+        noLink = "-no-link" `elem` argsGHC
     let hasArg x = x `elem` argsGHC
     let getArg b x = findArg b x argsGHC
 
