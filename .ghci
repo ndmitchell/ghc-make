@@ -1,3 +1,4 @@
+:set -isrc
 :set -fno-warn-overlapping-patterns
 :set -fwarn-unused-binds -fwarn-unused-imports
 :load Test

@@ -34,6 +34,7 @@ source-repository head
 executable ghc-make
     main-is: Main.hs
     ghc-options: -threaded
+    hs-source-dirs: src
     build-depends:
         base == 4.*,
         shake >= 0.13,
