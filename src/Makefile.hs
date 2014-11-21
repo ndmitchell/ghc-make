@@ -42,14 +42,14 @@ makefile file = fmap (foldl' f z . parseMakefile) $ readFile file
         -- * The Foo.o : Foo.hs line is always the first with Foo.o on the LHS
         -- * The root module (often Main.o) is always last
         f m (a,[b])
-            | Just o <- fromExt "_o_" a, not $ Map.member o $ source m = m{source=Map.insert o b $ source m}
-            | Just o <- fromExt "_o_" a, Just hi <- fromExt "_hi_" b = m{imports = Map.insertWith (++) o [Right hi] $ imports m}
-            | Just o <- fromExt "_o_" a = m{imports = Map.insertWith (++) o [Left b] $ imports m}
+            | Just o <- fromExt "o" a, not $ Map.member o $ source m = m{source=Map.insert o b $ source m}
+            | Just o <- fromExt "o" a, Just hi <- fromExt "hi" b = m{imports = Map.insertWith (++) o [Right hi] $ imports m}
+            | Just o <- fromExt "o" a = m{imports = Map.insertWith (++) o [Left b] $ imports m}
             | otherwise = m
         f m (a,bs) = foldl' f m [(a,[b]) | b <- bs]
 
 
 fromExt ext x
     | "-boot" `isSuffixOf` x, Just (Module m _) <- fromExt ext $ take (length x - 5) x = Just $ Module m True
-    | takeExtension x == "." ++ ext = Just $ Module (splitDirectories $ dropExtension x) False
+    | takeExtension x == "." ++ ext, isRelative x = Just $ Module (splitDirectories $ dropExtension x) False
     | otherwise = Nothing

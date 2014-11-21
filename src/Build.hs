@@ -59,7 +59,7 @@ main = do
             args <- needArgs
             needPkgs
             -- Use the default o/hi settings so we can parse the makefile properly
-            () <- cmd "ghc -M -include-pkg-deps -dep-suffix='' -dep-makefile" [out] args "-odir. -hidir. -hisuf=_hi_ -osuf=_o_"
+            () <- cmd "ghc -M -include-pkg-deps -dep-suffix=" [""] "-dep-makefile" [out] args "-odir. -hidir. -hisuf=hi -osuf=o"
             mk <- liftIO $ makefile out
             need $ Map.elems $ source mk
         needMk <- do cache <- newCache (\x -> do need [x]; liftIO $ makefile x); return $ cache $ prefix <.> "makefile"
