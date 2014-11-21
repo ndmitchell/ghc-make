@@ -124,7 +124,8 @@ newTest prefix = do
 testFlags :: Test -> [String]
 testFlags Test{..} =
     flag "hisuf" hisuf ++ flag "osuf" osuf ++ flag "hidir" hidir ++ flag "odir" odir ++
-    flag "outputdir" outputdir ++ flag "o" output ++ ["-no-link" | nolink] ++
+    flag "outputdir" outputdir ++
+    (if nolink then ["-no-link"] else flag "o" output) ++
     ["-j" ++ show threads | threads > 1]
     where flag a b = if b == "" then [] else ['-':a, b]
 
