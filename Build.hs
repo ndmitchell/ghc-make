@@ -59,7 +59,7 @@ main = do
             args <- needArgs
             needPkgs
             -- Use the default o/hi settings so we can parse the makefile properly
-            () <- cmd "ghc -M -include-pkg-deps -dep-makefile" [out] args "-odir. -hidir. -hisuf=_hi_ -osuf=_o_"
+            () <- cmd "ghc -M -include-pkg-deps -dep-suffix='' -dep-makefile" [out] args "-odir. -hidir. -hisuf=_hi_ -osuf=_o_"
             mk <- liftIO $ makefile out
             need $ Map.elems $ source mk
         needMk <- do cache <- newCache (\x -> do need [x]; liftIO $ makefile x); return $ cache $ prefix <.> "makefile"
@@ -72,7 +72,8 @@ main = do
         prefix <.> "result" *> \out -> do
             args <- needArgs
             mk <- needMk
-            let output = fmap outputFile $ Map.lookup (Module ["Main"] False) $ source mk
+            let output = if "-no-link" `elem` argsGHC then Nothing
+                         else fmap outputFile $ Map.lookup (Module ["Main"] False) $ source mk
 
             -- if you don't specify an odir/hidir then impossible to reverse from the file name to the module
             let exec = when (isJust output || threads == 1) $
