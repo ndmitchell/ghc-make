@@ -32,8 +32,8 @@ source-repository head
     location: https://github.com/ndmitchell/ghc-make.git
 
 executable ghc-make
-    main-is: Main.hs
-    ghc-options: -threaded
+    main-is: Build.hs
+    ghc-options: -threaded -main-is Build.main
     hs-source-dirs: src
     build-depends:
         base == 4.*,
@@ -42,5 +42,4 @@ executable ghc-make
         process >= 1.0
     other-modules:
         Arguments
-        Build
         Makefile
