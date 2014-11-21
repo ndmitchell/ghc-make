@@ -25,6 +25,7 @@ bug-reports:        https://github.com/ndmitchell/ghc-make/issues
 extra-source-files:
     README.md
     CHANGES.txt
+    src/Test.hs
 tested-with:        GHC==7.8.3, GHC==7.6.3, GHC==7.4.2, GHC==7.2.2
 
 source-repository head
