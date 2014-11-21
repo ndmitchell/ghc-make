@@ -59,6 +59,7 @@ withCurrentDirectory dir act = do
 touch :: FilePath -> IO ()
 touch file = do
     putStrLn $ "Touching " ++ file
+    sleep 1 -- to give the file system time to register it
     src <- readFile file
     evaluate $ length src
     writeFile file src
@@ -85,6 +86,7 @@ clean dir = do
     -- Retry a lot, sometimes Windows gets caught up
     retry 10 $ do
         performGC
+        sleep 1
         removeFiles dir $
             ["//*.hi","//*.hi-boot","//*.o","//*.o-boot"
             ,"//*.hix","//*.hix-boot","//*.ox","//*.ox-boot"
@@ -159,7 +161,6 @@ main = do
                 run "tests/simple" ("Main.hs":testFlags t0) [Remain main_o]
                 touch "tests/simple/Main.hs"
                 run "tests/simple" ("Main.hs":testFlags t) [Change main_o, Remain a_o]
-                sleep 1
                 touch "tests/simple/Main.hs"
                 run "tests/simple" ("Main.hs":testFlags t) [Change main_o, Remain a_o]
                 run "tests/simple" ("Main.hs":testFlags t) [Remain main_o]
