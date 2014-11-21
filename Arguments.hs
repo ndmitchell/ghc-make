@@ -79,7 +79,7 @@ extFileModule getArg ext = (extDir, extFile, extModule)
         extFile (Module name boot) = extDir </> joinPath name <.> extSuf ++ (if boot then "-boot" else "")
         extModule s
             | "-boot" `isSuffixOf` s, Just (Module name _) <- extModule $ take (length s - 5) s = newModule name True
-            | extDir `isPrefixOf` s && extSuf `isSuffixOf` s
+            | toStandard extDir `isPrefixOf` toStandard s && extSuf `isSuffixOf` s
                 = newModule (splitDirectories $ dropWhile isPathSeparator $ dropExtensions $ drop (length extDir) s) False
             | otherwise = Nothing
 
