@@ -1,6 +1,5 @@
 
-import Neil
+import System.Process.Extra
 
-main :: IO ()
 main = do
-    cmd "runhaskell Test"
+    system_ "runhaskell Test"
