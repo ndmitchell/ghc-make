@@ -1,6 +1,6 @@
 {-# LANGUAGE RecordWildCards, DeriveDataTypeable, GeneralizedNewtypeDeriving #-}
 
-module Build(main) where
+module Main(main) where
 
 import Control.Monad
 import Data.Either
