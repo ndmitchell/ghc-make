@@ -42,20 +42,20 @@ main = do
         want [prefix <.> "result"]
 
         -- A file containing the GHC arguments
-        prefix <.> "args" *> \out -> do
+        prefix <.> "args" %> \out -> do
             alwaysRerun
             writeFileChanged out $ unlines argsGHC
         needArgs <- return $ do need [prefix <.> "args"]; return argsGHC
 
         -- A file containing the ghc-pkg list output
-        prefix <.> "pkgs" *> \out -> do
+        prefix <.> "pkgs" %> \out -> do
             alwaysRerun
             (Stdout s, Stderr _) <- cmd "ghc-pkg list --verbose"
             writeFileChanged out s
         needPkgs <- return $ need [prefix <.> "pkgs"]
 
         -- A file containing the output of -M
-        prefix <.> "makefile" *> \out -> do
+        prefix <.> "makefile" %> \out -> do
             args <- needArgs
             needPkgs
             -- Use the default o/hi settings so we can parse the makefile properly
@@ -69,7 +69,7 @@ main = do
 
         -- The result, we can't want the object directly since it is painful to
         -- define a build rule for it because its name depends on both args and makefile
-        prefix <.> "result" *> \out -> do
+        prefix <.> "result" %> \out -> do
             args <- needArgs
             mk <- needMk
             let output = if "-no-link" `elem` argsGHC then Nothing
