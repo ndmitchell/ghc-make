@@ -1,5 +1,6 @@
 Changelog for ghc-make
 
+0.3.1
     GHC 7.10 compatibility
 0.3
     GHC 7.8 compatibility, following -M output changes (GHC #9287)
