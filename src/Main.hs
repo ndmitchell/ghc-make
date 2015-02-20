@@ -50,7 +50,7 @@ main = do
         -- A file containing the ghc-pkg list output
         prefix <.> "pkgs" %> \out -> do
             alwaysRerun
-            (Stdout s, Stderr _) <- cmd "ghc-pkg list --verbose"
+            (Stdout s, Stderr (_ :: String)) <- cmd "ghc-pkg list --verbose"
             writeFileChanged out s
         needPkgs <- return $ need [prefix <.> "pkgs"]
 
