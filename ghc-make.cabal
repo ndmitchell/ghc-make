@@ -7,7 +7,7 @@ license-file:       LICENSE
 category:           Development
 author:             Neil Mitchell <ndmitchell@gmail.com>
 maintainer:         Neil Mitchell <ndmitchell@gmail.com>
-copyright:          Neil Mitchell 2013-2014
+copyright:          Neil Mitchell 2013-2015
 synopsis:           Accelerated version of ghc --make
 description:
     The @ghc-make@ program can be used as a drop-in replacement for @ghc@. This program
