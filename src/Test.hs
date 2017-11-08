@@ -6,7 +6,8 @@ import qualified Main
 import Control.Concurrent
 import Control.Exception
 import Control.Monad
-import System.Directory
+import System.Directory.Extra
+import System.Time.Extra
 import System.Environment
 import System.Exit
 import System.Mem
@@ -51,11 +52,6 @@ run dir args es = do
             Main.main
             sequence_ acts
 
-withCurrentDirectory :: FilePath -> IO () -> IO ()
-withCurrentDirectory dir act = do
-    curdir <- getCurrentDirectory
-    bracket_ (setCurrentDirectory dir) (setCurrentDirectory curdir) act
-
 touch :: FilePath -> IO ()
 touch file = do
     putStrLn $ "Touching " ++ file
@@ -63,9 +59,6 @@ touch file = do
     src <- readFile file
     evaluate $ length src
     writeFile file src
-
-sleep :: Double -> IO ()
-sleep x = threadDelay $ ceiling $ x * 1000000
 
 retry :: Int -> IO a -> IO a
 retry i x | i <= 0 = error "retry ran out of times"
