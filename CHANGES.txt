@@ -1,5 +1,6 @@
 Changelog for ghc-make
 
+    Shake 0.16 compatibility
 0.3.2
     Shake 0.15 compatibility
 0.3.1

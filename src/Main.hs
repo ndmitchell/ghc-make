@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards, DeriveDataTypeable, GeneralizedNewtypeDeriving, ScopedTypeVariables #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module Main(main) where
 
@@ -22,8 +23,10 @@ ghcMakeVer = 3
 
 
 newtype AskImports = AskImports Module deriving (Show,Typeable,Eq,Hashable,Binary,NFData)
+type instance RuleResult AskImports = [Either FilePath Module]
 
 newtype AskSource = AskSource Module deriving (Show,Typeable,Eq,Hashable,Binary,NFData)
+type instance RuleResult AskSource = String
 
 
 main :: IO ()

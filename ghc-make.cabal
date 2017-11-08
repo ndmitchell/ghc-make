@@ -37,7 +37,7 @@ executable ghc-make
     hs-source-dirs: src
     build-depends:
         base == 4.*,
-        shake >= 0.14,
+        shake >= 0.16,
         unordered-containers >= 0.2.1,
         process >= 1.0
     other-modules:
