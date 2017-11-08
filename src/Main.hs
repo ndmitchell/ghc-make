@@ -6,6 +6,7 @@ module Main(main) where
 import Control.Monad
 import Data.Either
 import Data.Maybe
+import Data.Functor
 import Development.Shake
 import Development.Shake.Classes
 import Development.Shake.FilePath
@@ -15,6 +16,7 @@ import System.Process
 import qualified Data.HashMap.Strict as Map
 import Arguments
 import Makefile
+import Prelude
 
 
 -- | Increment every time I change the rules in an incompatible way

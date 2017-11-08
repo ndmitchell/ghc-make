@@ -7,7 +7,9 @@ import Development.Shake.FilePath
 import Development.Shake.Classes
 import Development.Shake.Util
 import Data.Bits
+import Data.Functor
 import qualified Data.HashMap.Strict as Map
+import Prelude
 
 
 data Module = Module {moduleName :: [String], moduleBoot :: Bool}
