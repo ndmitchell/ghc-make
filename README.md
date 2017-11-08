@@ -1,4 +1,4 @@
-# ghc-make [![Hackage version](https://img.shields.io/hackage/v/ghc-make.svg?style=flat)](https://hackage.haskell.org/package/ghc-make) [![Build Status](https://img.shields.io/travis/ndmitchell/ghc-make.svg?style=flat)](https://travis-ci.org/ndmitchell/ghc-make)
+# ghc-make [![Hackage version](https://img.shields.io/hackage/v/ghc-make.svg?label=Hackage)](https://hackage.haskell.org/package/ghc-make) [![Linux Build Status](https://img.shields.io/travis/ndmitchell/ghc-make.svg?label=Linux%20build)](https://travis-ci.org/ndmitchell/ghc-make)
 
 An alternative to `ghc --make` which supports parallel compilation of modules and runs faster when nothing needs compiling.
 
