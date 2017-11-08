@@ -26,7 +26,7 @@ data Expect = Exit
 
 mtime file = do
     b <- doesFileExist file
-    if b then fmap Just $ getModificationTime file else return Nothing
+    if b then Just <$> getModificationTime file else return Nothing
 
 expect :: Expect -> IO (IO ())
 expect Exit = return $ return ()
@@ -45,7 +45,7 @@ expect (Remain x) = do
 run :: FilePath -> [String] -> [Expect] -> IO ()
 run dir args es = do
     putStrLn $ "Running " ++ unwords (dir:args)
-    handle (\(e :: ExitCode) -> if Exit `elem` es then return () else error "Unexpected exit") $ do
+    handle (\(e :: ExitCode) -> if Exit `elem` es then return () else error "Unexpected exit") $
         withCurrentDirectory dir $ withArgs args $ do
             acts <- mapM expect es
             threadDelay 1000000
@@ -80,7 +80,7 @@ clean dir = do
     retry 10 $ do
         performGC
         sleep 1
-        removeFiles dir $
+        removeFiles dir
             ["//*.hi","//*.hi-boot","//*.o","//*.o-boot"
             ,"//*.hix","//*.hix-boot","//*.ox","//*.ox-boot"
             ,"//.ghc-make.*"

@@ -1,4 +1,4 @@
-{-# LANGUAGE RecordWildCards, PatternGuards, DeriveDataTypeable #-}
+{-# LANGUAGE PatternGuards, DeriveDataTypeable #-}
 
 module Makefile(Makefile(..), Module(..), makefile) where
 
@@ -34,7 +34,7 @@ data Makefile = Makefile
 
 
 makefile :: FilePath -> IO Makefile
-makefile file = fmap (foldl' f z . parseMakefile) $ readFile file
+makefile file = foldl' f z . parseMakefile <$> readFile file
     where
         z = Makefile Map.empty Map.empty
 

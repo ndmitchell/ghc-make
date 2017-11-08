@@ -48,14 +48,14 @@ main = do
         prefix <.> "args" %> \out -> do
             alwaysRerun
             writeFileChanged out $ unlines argsGHC
-        needArgs <- return $ do need [prefix <.> "args"]; return argsGHC
+        let needArgs = do need [prefix <.> "args"]; return argsGHC
 
         -- A file containing the ghc-pkg list output
         prefix <.> "pkgs" %> \out -> do
             alwaysRerun
             (Stdout s, Stderr (_ :: String)) <- cmd "ghc-pkg list --verbose"
             writeFileChanged out s
-        needPkgs <- return $ need [prefix <.> "pkgs"]
+        let needPkgs = need [prefix <.> "pkgs"]
 
         -- A file containing the output of -M
         prefix <.> "makefile" %> \out -> do
@@ -100,7 +100,7 @@ main = do
         match &?> \[o,hi] -> do
             let Just m = oModule o
             source <- askSource (AskSource m)
-            (files,mods) <- fmap partitionEithers $ askImports (AskImports m)
+            (files,mods) <- partitionEithers <$> askImports (AskImports m)
             need $ source : map hiFile mods ++ files
             when (threads /= 1) $ do
                 args <- needArgs
