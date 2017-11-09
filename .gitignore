@@ -1,1 +1,7 @@
 /dist/
+.ghc-make.*
+.shake.*
+*.hi
+*.o
+*.hi-boot
+*.o-boot
