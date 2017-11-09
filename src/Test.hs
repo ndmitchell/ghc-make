@@ -6,6 +6,7 @@ import qualified Main
 import Control.Concurrent
 import Control.Exception
 import Control.Monad
+import Data.Functor
 import System.Directory.Extra
 import System.Time.Extra
 import System.Environment
@@ -14,6 +15,7 @@ import System.Mem
 import System.Random
 import Development.Shake(removeFiles)
 import Development.Shake.FilePath
+import Prelude
 
 
 ---------------------------------------------------------------------
